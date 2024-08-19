@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Cast Example</title>
+  </head>
+  <body>
+    <button id="castButton">Cast YouTube Video</button>
+
+    <script src="https://www.gstatic.com/cast/sdk/libs/cast_sender/1.0/cast_sender.js"></script>
+
+    <script>
+      window.__onGCastApiAvailable = function (isAvailable) {
+        if (isAvailable) {
+          console.log("Google Cast API is available.");
+          initializeCastApi();
+        } else {
+          console.error("Google Cast API is not available.");
+        }
+      };
+
+      function initializeCastApi() {
+        // Obtener la instancia de CastContext
+        const castContext = cast.framework.CastContext.getInstance();
+        castContext.setOptions({
+          receiverApplicationId:
+            cast.framework.CastContext.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+        });
+
+        document
+          .getElementById("castButton")
+          .addEventListener("click", function () {
+            castYouTubeVideo();
+          });
+      }
+
+      function castYouTubeVideo() {
+        const castContext = cast.framework.CastContext.getInstance();
+        const castSession = castContext.getCastSession();
+
+        if (!castSession) {
+          console.log("No cast session available.");
+          return;
+        }
+
+        const mediaInfo = new chrome.cast.media.MediaInfo(
+          "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "video/mp4"
+        );
+        mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+        mediaInfo.metadata.title = "YouTube Video Title";
+        mediaInfo.metadata.subtitle = "Artist Name";
+
+        const request = new chrome.cast.media.LoadRequest(mediaInfo);
+        castSession.loadMedia(request).then(
+          function () {
+            console.log("Video casted successfully.");
+          },
+          function (errorCode) {
+            console.error("Error casting video:", errorCode);
+          }
+        );
+      }
+    </script>
+  </body>
+</html>
